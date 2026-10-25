@@ -10,5 +10,5 @@
   "engines": { "node": ">=18" },
   "license": "MIT",
   "author": "ShartazFeeham",
-  "repository": { "type": "git", "url": "git+https://github.com/ShartazFeeham/claude-meter.git" }
+  "repository": { "type": "git", "url": "git+https://github.com/ShartazFeeham/fTools.git" }
 }

@@ -1,4 +1,4 @@
-# claude-meter
+# fTools: claude-meter
 
 A small floating Claude icon (macOS and Windows) that shows your **Claude Code usage limits** at a glance:
 
@@ -16,13 +16,13 @@ Click the icon for details and reset times. Drag it anywhere. No setup: it finds
 You need [Node.js](https://nodejs.org) 18+ and [Claude Code](https://claude.com/claude-code) signed in once.
 
 ```sh
-npx github:ShartazFeeham/claude-meter up
+npx github:ShartazFeeham/fTools up
 ```
 
 To keep the `claude-meter` command around:
 
 ```sh
-npm i -g github:ShartazFeeham/claude-meter
+npm i -g github:ShartazFeeham/fTools
 claude-meter up
 ```
 
@@ -46,7 +46,7 @@ claude-meter login    sign in to Claude Code (runs: claude auth login)
 ## Develop
 
 ```sh
-git clone https://github.com/ShartazFeeham/claude-meter && cd claude-meter
+git clone https://github.com/ShartazFeeham/fTools && cd fTools
 npm i && npm test
 node bin/cli.js status
 ```

@@ -17,7 +17,7 @@ const sh = (cmd, args) => { try { return execFileSync(cmd, args, { stdio: ["igno
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const alive = (p) => { try { process.kill(p, 0); return true; } catch { return false; } };
 const pid = () => { try { const p = +fs.readFileSync(lib.PID, "utf8"); return alive(p) ? p : 0; } catch { return 0; } };
-const electron = () => { try { return require("electron"); } catch { return die("Electron is not installed. Reinstall: npm i -g github:ShartazFeeham/claude-meter"); } };
+const electron = () => { try { return require("electron"); } catch { return die("Electron is not installed. Reinstall: npm i -g github:ShartazFeeham/fTools"); } };
 
 // "Starts at login": a LaunchAgent on macOS, a Run registry key on Windows. (No Linux autostart: `up` just starts it.)
 async function autostart(on) {
