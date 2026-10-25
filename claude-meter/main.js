@@ -8,6 +8,9 @@ const lib = require("./lib");
 
 let win = null, quitting = false, api = null, loggingIn = false, timer = null;
 
+// A fixed data folder (the package name has a slash, and a missing parent folder breaks the single-instance lock on a fresh machine).
+app.setPath("userData", path.join(app.getPath("appData"), "claude-meter"));
+
 function refresh() {   // every 60 s when it works, every 30 s while anything is wrong (so a fresh login shows up fast)
   return lib.getUsage().then((u) => { api = u; }, (e) => {
     // a login problem must not keep showing the previous account's numbers
@@ -78,7 +81,7 @@ app.on("before-quit", (e) => { if (!quitting) { e.preventDefault(); confirmQuit(
 process.on("SIGTERM", () => { quitting = true; app.quit(); });   // `claude-meter down`, launchctl bootout
 app.on("window-all-closed", () => { quitting = true; app.quit(); });
 
-if (!app.requestSingleInstanceLock()) app.quit();   // only one meter, even if started twice
+if (!app.requestSingleInstanceLock()) app.exit(0);   // only one meter, even if started twice (exit, not quit: quit asks "close the meter?")
 else {
   app.on("second-instance", () => { if (win) win.show(); });
   app.whenReady().then(() => {

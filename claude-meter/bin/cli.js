@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // claude-meter up | down | status | login
 const fs = require("fs"), os = require("os"), path = require("path");
-const { execFileSync, spawn } = require("child_process");
+const { execFileSync, spawn, spawnSync } = require("child_process");
 const lib = require("../lib");
 const pkg = require("../package.json");
 
@@ -65,15 +65,28 @@ const commands = {
     const bin = electron();
     await stop();
     await autostart(true);
-    if (!mac) spawn(bin, [APP], { detached: true, stdio: "ignore", windowsHide: true, env: { ...process.env, ELECTRON_RUN_AS_NODE: "" } }).unref();
-    for (let i = 0; i < 40 && !pid(); i++) await sleep(250);
-    if (!pid()) die("the meter did not start" + (mac ? ` (see ${path.join(lib.DIR, "meter.log")})` : ""));
+    fs.mkdirSync(lib.DIR, { recursive: true });
+    const LOG = path.join(lib.DIR, "meter.log");
+    if (!mac) {   // (macOS starts it through launchd, which logs to the same file)
+      const env = { ...process.env }; delete env.ELECTRON_RUN_AS_NODE;   // set (even empty) makes Electron run as plain Node
+      const log = fs.openSync(LOG, "a");
+      spawn(bin, [APP], { detached: true, stdio: ["ignore", log, log], env }).unref();   // no windowsHide: it would hide the bubble too
+    }
+    for (let i = 0; i < 80 && !pid(); i++) await sleep(250);   // up to 20 s: the first start of a fresh Electron can be slow (antivirus scan)
+    if (!pid()) { let t = ""; try { t = fs.readFileSync(LOG, "utf8").trim().split("\n").slice(-8).join("\n"); } catch {} die(`the meter did not start. Log (${LOG}):\n${t || "(empty)"}`); }
     console.log("✓ Claude meter is up" + (mac || win ? " (and starts at login)." : "."));
     if (APP.includes(path.sep + "_npx" + path.sep)) console.log("\nYou ran this with npx, which does not install the `claude-meter` command (and its login item points into npm's temporary cache).\nInstall it properly: npm i -g github:ShartazFeeham/fTools   then: claude-meter up");
   },
   async down() {
     await stop();
     console.log("✓ Claude meter is down" + (mac || win ? " (it will not start at login until you run: claude-meter up)." : "."));
+  },
+  async uninstall() {   // stop it, remove its login item and data, and remove the npm package
+    await stop();
+    const data = win ? path.join(process.env.APPDATA || "", "claude-meter") : mac ? path.join(os.homedir(), "Library", "Application Support", "claude-meter") : path.join(process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config"), "claude-meter");
+    for (const d of [lib.DIR, data]) fs.rmSync(d, { recursive: true, force: true });
+    spawnSync("npm", ["rm", "-g", "@shartazfeeham/ftools"], { stdio: "inherit", shell: win });
+    console.log("✓ Claude meter is uninstalled (stopped, login item and data removed).");
   },
   login() {
     let c; try { c = lib.login({ inherit: true }); } catch (e) { die(e.message); }
@@ -103,10 +116,11 @@ const commands = {
   help() {
     console.log(`claude-meter ${pkg.version}: floating Claude usage meter (5-hour and weekly limits)
 
-  claude-meter up       start the meter (restarts it if running) and start it at every login
-  claude-meter down     stop it and remove it from login
-  claude-meter status   usage numbers, Claude Code login check, meter state
-  claude-meter login    sign in to Claude Code (claude auth login)
+  claude-meter up         start the meter (restarts it if running) and start it at every login
+  claude-meter down       stop it and remove it from login
+  claude-meter status     usage numbers, Claude Code login check, meter state
+  claude-meter login      sign in to Claude Code (claude auth login)
+  claude-meter uninstall  stop it, remove login item and data, and remove the package
 
 It finds your Claude Code login by itself; nothing to configure.`);
   },
