@@ -69,6 +69,7 @@ const commands = {
     for (let i = 0; i < 40 && !pid(); i++) await sleep(250);
     if (!pid()) die("the meter did not start" + (mac ? ` (see ${path.join(lib.DIR, "meter.log")})` : ""));
     console.log("✓ Claude meter is up" + (mac || win ? " (and starts at login)." : "."));
+    if (APP.includes(path.sep + "_npx" + path.sep)) console.log("\nYou ran this with npx, which does not install the `claude-meter` command (and its login item points into npm's temporary cache).\nInstall it properly: npm i -g github:ShartazFeeham/fTools   then: claude-meter up");
   },
   async down() {
     await stop();
