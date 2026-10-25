@@ -11,14 +11,10 @@ Small tools by ShartazFeeham. Each lives in its own folder.
 Needs Node.js 18+ and Claude Code signed in once.
 
 ```sh
-git clone https://github.com/ShartazFeeham/fTools
-cd fTools/claude-meter
-npm i
-node bin/cli.js up
+npx -p github:ShartazFeeham/fTools claude-meter up
 ```
 
-(On macOS do not clone into `~/Documents`, `~/Desktop` or `~/Downloads`: macOS blocks the start-at-login item there.)
-Once published to npm this becomes `npx @shartazfeeham/claude-meter up`, and `npm i -g @shartazfeeham/claude-meter` gives the `claude-meter` command. Commands (from the clone: `node bin/cli.js <command>`):
+Or keep the command: `npm i -g github:ShartazFeeham/fTools`, then:
 
 ```
 claude-meter up       start the meter (restarts it if running) and start it at every login
@@ -36,6 +32,6 @@ How it works: every 60 s (30 s after a failed check) it asks `api.anthropic.com/
 the refresh token is never touched. Start at login is a LaunchAgent on macOS and a `Run` registry key on Windows (macOS shows a
 one-time "background activity" notice). An expired token shows ⚠ until Claude Code refreshes it or you run `claude-meter login`.
 
-Develop: `git clone https://github.com/ShartazFeeham/fTools && cd fTools/claude-meter && npm i && npm test && node bin/cli.js status`
+Develop: `git clone https://github.com/ShartazFeeham/fTools && cd fTools && npm i && npm test && node claude-meter/bin/cli.js status`
 
 MIT, see [claude-meter/LICENSE](claude-meter/LICENSE).
