@@ -1,0 +1,24 @@
+# Publishes one tool to npm when you push a tag named <tool>-v<version>, e.g. claude-meter-v1.0.1.
+# Login is npm "trusted publishing" (no token stored): set it up once per package on npmjs.com, workflow file name: publish.yml
+name: publish
+on:
+  push:
+    tags: ["*-v*"]
+permissions:
+  contents: read
+  id-token: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 24, registry-url: "https://registry.npmjs.org" }
+      - run: npm i -g npm@latest   # trusted publishing needs npm 11.5.1 or newer
+      - name: Publish the tool named in the tag
+        run: |
+          TOOL="${GITHUB_REF_NAME%-v*}"; VER="${GITHUB_REF_NAME##*-v}"
+          cd "$TOOL"
+          [ "$(node -p "require('./package.json').version")" = "$VER" ] || { echo "tag version $VER does not match $TOOL/package.json"; exit 1; }
+          npm test
+          npm publish --access public
