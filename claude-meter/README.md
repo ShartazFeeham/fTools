@@ -35,4 +35,21 @@ Claude Code access token. Read only: the token is used for that one request and 
 Start at login is a LaunchAgent on macOS and a `Run` registry key on Windows (macOS shows a one-time "background activity" notice).
 An expired token shows ⚠ until Claude Code refreshes it or you run `claude-meter login`.
 
+## Develop
+
+```sh
+git clone https://github.com/ShartazFeeham/fTools && cd fTools/claude-meter
+npm i && npm test
+node bin/cli.js status
+```
+
+Files: `bin/cli.js` (commands, start at login), `lib.js` (find the login, ask for usage, start sign-in), `main.js` and `meter.html` (the floating window).
+
+## Release
+
+1. Bump `version` in `package.json`, commit and push.
+2. `git tag claude-meter-v<version> && git push origin claude-meter-v<version>`. The `publish` workflow in `.github/workflows` publishes it to npm.
+
+One-time setup on npmjs.com (package Settings, Trusted Publisher, GitHub Actions): user `ShartazFeeham`, repository `fTools`, workflow `publish.yml`, and tick "Allow npm publish". No token is stored.
+
 Source and other tools: https://github.com/ShartazFeeham/fTools. Open to contributions. MIT.
