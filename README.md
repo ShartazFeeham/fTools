@@ -10,17 +10,18 @@ Small tools by ShartazFeeham. Each lives in its own folder.
 
 1. Make a folder `<tool>/` with its own `package.json` (name, `bin`, dependencies), code and tests.
 2. In the root `package.json` add `"<tool>": "<tool>/bin/cli.js"` to `bin`, add the folder to `files`, and add the tool's dependencies.
-3. Add a row to the table above. Run it with `npx -p github:ShartazFeeham/fTools <tool> ...`
+3. Add a row to the table above. Users get its command with `npm i -g github:ShartazFeeham/fTools`
 
 ## claude-meter
 
 Needs Node.js 18+ and Claude Code signed in once.
 
 ```sh
-npx -p github:ShartazFeeham/fTools claude-meter up
+npm i -g github:ShartazFeeham/fTools
+claude-meter up
 ```
 
-Or keep the command: `npm i -g github:ShartazFeeham/fTools`, then:
+Run `claude-meter` alone to list the commands:
 
 ```
 claude-meter up       start the meter (restarts it if running) and start it at every login
