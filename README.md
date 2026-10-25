@@ -24,10 +24,11 @@ claude-meter up
 Run `claude-meter` alone to list the commands:
 
 ```
-claude-meter up       start the meter (restarts it if running) and start it at every login
-claude-meter down     stop it and remove it from login
-claude-meter status   usage numbers, Claude Code login check, meter state
-claude-meter login    sign in to Claude Code (runs: claude auth login)
+claude-meter up         start the meter (restarts it if running) and start it at every login
+claude-meter down       stop it and remove it from login
+claude-meter status     usage numbers, Claude Code login check, meter state
+claude-meter login      sign in to Claude Code (claude auth login)
+claude-meter uninstall  stop it, remove login item and data, and remove the package
 ```
 
 The green chip is minutes to the 5-hour reset (hours of the weekly limit once it is used up), yellow is the 5-hour limit used,
