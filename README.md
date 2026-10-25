@@ -10,6 +10,8 @@ Small tools by ShartazFeeham, one folder each. Open to contributions.
 
 [![npm downloads](https://img.shields.io/npm/dm/@feeham/claude-meter)](https://www.npmjs.com/package/@feeham/claude-meter)
 
+<img src="https://raw.githubusercontent.com/ShartazFeeham/fTools/main/claude-meter/screenshot.png" alt="claude-meter" width="260">
+
 ```sh
 npm i -g @feeham/claude-meter
 claude-meter up

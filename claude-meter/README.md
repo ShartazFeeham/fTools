@@ -1,5 +1,7 @@
 # claude-meter
 
+<img src="https://raw.githubusercontent.com/ShartazFeeham/fTools/main/claude-meter/screenshot.png" alt="claude-meter" width="300">
+
 A small floating Claude icon (macOS and Windows) that shows your **Claude Code usage limits** at a glance.
 
 - green: minutes until the 5-hour limit resets (hours of the weekly limit once it is used up)
