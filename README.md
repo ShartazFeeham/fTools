@@ -6,6 +6,12 @@ Small tools by ShartazFeeham. Each lives in its own folder.
 |------|------------|
 | [claude-meter](claude-meter/) | floating Claude Code usage meter (5-hour and weekly limits), macOS and Windows |
 
+## Adding a tool
+
+1. Make a folder `<tool>/` with its own `package.json` (name, `bin`, dependencies), code and tests.
+2. In the root `package.json` add `"<tool>": "<tool>/bin/cli.js"` to `bin`, add the folder to `files`, and add the tool's dependencies.
+3. Add a row to the table above. Run it with `npx -p github:ShartazFeeham/fTools <tool> ...`
+
 ## claude-meter
 
 Needs Node.js 18+ and Claude Code signed in once.
