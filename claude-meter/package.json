@@ -1,5 +1,5 @@
 {
-  "name": "@shartazfeeham/claude-meter",
+  "name": "@feeham/claude-meter",
   "version": "1.0.0",
   "description": "Floating Claude icon: 5-hour and weekly usage-limit meter for your Claude Code account (macOS and Windows)",
   "main": "main.js",

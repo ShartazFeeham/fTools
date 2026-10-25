@@ -85,7 +85,7 @@ const commands = {
     await stop();
     const data = win ? path.join(process.env.APPDATA || "", "claude-meter") : mac ? path.join(os.homedir(), "Library", "Application Support", "claude-meter") : path.join(process.env.XDG_CONFIG_HOME || path.join(os.homedir(), ".config"), "claude-meter");
     for (const d of [lib.DIR, data]) fs.rmSync(d, { recursive: true, force: true });
-    spawnSync("npm", ["rm", "-g", "@shartazfeeham/ftools"], { stdio: "inherit", shell: win });
+    spawnSync("npm", ["rm", "-g", "@feeham/claude-meter", "@shartazfeeham/ftools"], { stdio: "inherit", shell: win });   // npm install, or the GitHub install
     console.log("✓ Claude meter is uninstalled (stopped, login item and data removed).");
   },
   login() {

@@ -14,7 +14,7 @@ Click the icon for details and reset times; drag it anywhere. No setup: it finds
 Needs Node.js 18+ and Claude Code signed in once.
 
 ```sh
-npm i -g @shartazfeeham/claude-meter
+npm i -g @feeham/claude-meter
 claude-meter up
 ```
 
