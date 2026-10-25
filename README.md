@@ -8,16 +8,18 @@ Small tools by ShartazFeeham. Each lives in its own folder.
 
 ## Adding a tool
 
-1. Make a folder `<tool>/` with its own `package.json` (name, `bin`, dependencies), code and tests.
-2. In the root `package.json` add `"<tool>": "<tool>/bin/cli.js"` to `bin`, add the folder to `files`, and add the tool's dependencies.
-3. Add a row to the table above. Users get its command with `npm i -g github:ShartazFeeham/fTools`
+1. Make a folder `<tool>/` with its own `package.json` (name `@feeham/<tool>`, `bin`, dependencies), code, tests and a README.
+2. Add a row to the table above.
+3. Publish it (see "Releasing a tool" below); users install it with `npm i -g @feeham/<tool>`.
 
 ## claude-meter
+
+[![npm downloads](https://img.shields.io/npm/dm/@feeham/claude-meter)](https://www.npmjs.com/package/@feeham/claude-meter)
 
 Needs Node.js 18+ and Claude Code signed in once.
 
 ```sh
-npm i -g github:ShartazFeeham/fTools
+npm i -g @feeham/claude-meter
 claude-meter up
 ```
 
@@ -43,3 +45,9 @@ one-time "background activity" notice). An expired token shows ⚠ until Claude 
 Develop: `git clone https://github.com/ShartazFeeham/fTools && cd fTools && npm i && npm test && node claude-meter/bin/cli.js status`
 
 MIT, see [claude-meter/LICENSE](claude-meter/LICENSE).
+
+## Releasing a tool
+
+Bump `version` in `<tool>/package.json`, push, then tag and push the tag: `git tag <tool>-v<version> && git push origin <tool>-v<version>`.
+The `publish` workflow publishes that tool to npm (trusted publishing, no token). Set it up once per package on npmjs.com:
+package Settings, Trusted Publisher, GitHub Actions, user `ShartazFeeham`, repo `fTools`, workflow `publish.yml`.

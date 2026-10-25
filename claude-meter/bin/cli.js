@@ -17,7 +17,7 @@ const sh = (cmd, args) => { try { return execFileSync(cmd, args, { stdio: ["igno
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const alive = (p) => { try { process.kill(p, 0); return true; } catch { return false; } };
 const pid = () => { try { const p = +fs.readFileSync(lib.PID, "utf8"); return alive(p) ? p : 0; } catch { return 0; } };
-const electron = () => { try { return require("electron"); } catch { return die("Electron is not installed. Reinstall: npm i -g github:ShartazFeeham/fTools"); } };
+const electron = () => { try { return require("electron"); } catch { return die("Electron is not installed. Reinstall: npm i -g @feeham/claude-meter"); } };
 
 // "Starts at login": a LaunchAgent on macOS, a Run registry key on Windows. (No Linux autostart: `up` just starts it.)
 async function autostart(on) {
@@ -75,7 +75,7 @@ const commands = {
     for (let i = 0; i < 80 && !pid(); i++) await sleep(250);   // up to 20 s: the first start of a fresh Electron can be slow (antivirus scan)
     if (!pid()) { let t = ""; try { t = fs.readFileSync(LOG, "utf8").trim().split("\n").slice(-8).join("\n"); } catch {} die(`the meter did not start. Log (${LOG}):\n${t || "(empty)"}`); }
     console.log("✓ Claude meter is up" + (mac || win ? " (and starts at login)." : "."));
-    if (APP.includes(path.sep + "_npx" + path.sep)) console.log("\nYou ran this with npx, which does not install the `claude-meter` command (and its login item points into npm's temporary cache).\nInstall it properly: npm i -g github:ShartazFeeham/fTools   then: claude-meter up");
+    if (APP.includes(path.sep + "_npx" + path.sep)) console.log("\nYou ran this with npx, which does not install the `claude-meter` command (and its login item points into npm's temporary cache).\nInstall it properly: npm i -g @feeham/claude-meter   then: claude-meter up");
   },
   async down() {
     await stop();
