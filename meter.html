@@ -1,0 +1,129 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Claude meter</title>
+<style>
+  html,body{margin:0;background:transparent;font:13px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#f4f2ee;user-select:none;overflow:hidden}
+  #wrap{display:flex;flex-direction:column;align-items:flex-end;gap:8px;padding:4px}
+  /* sun and planets: the Claude starburst is the sun, three numbers orbit it on one arc at the left-middle */
+  #box{zoom:.75;position:relative;width:86px;height:68px;flex:none}
+  #wrap.min #box{opacity:.5}   /* minimized: the icon and the three numbers are half transparent */
+  #bubble{position:absolute;left:26px;top:6px;width:56px;height:56px;border-radius:50%;background:#d97757;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.45)}
+  #bubble:hover{background:#e58a6a}
+  .cnt{position:absolute;min-width:20px;height:20px;border-radius:10px;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 5px;box-sizing:border-box;box-shadow:0 0 0 2px rgba(24,22,20,.75);color:#10120f}
+  .cnt.g{background:#58d68d}.cnt.y{background:#f2c94c}.cnt.r{background:#ee6b6e;color:#fff}
+  .cnt.click{cursor:pointer}
+  #cg{left:8px;top:3px}#cy{left:2px;top:24px}#cr{left:8px;top:45px}
+  #panel{display:none;width:316px;box-sizing:border-box;padding:10px 12px 12px;border-radius:14px;background:rgba(24,22,20,.62);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.14);box-shadow:0 8px 28px rgba(0,0,0,.35)}
+  #panel.open{display:block}
+  .head{display:flex;align-items:center;justify-content:space-between;font-weight:600;font-size:12px;color:#d9d4cc;padding-bottom:8px}
+  .head button{all:unset;cursor:pointer;width:22px;height:22px;line-height:22px;text-align:center;border-radius:50%;background:rgba(255,255,255,.12);font-size:13px;margin-left:6px}
+  .head button:hover{background:rgba(255,255,255,.24)}
+  .blk{padding:8px 0;border-top:1px solid rgba(255,255,255,.1)}
+  .top{display:flex;justify-content:space-between;align-items:baseline}
+  .name{font-weight:600}
+  .pct{font-size:20px;font-weight:700}
+  .bar{height:8px;border-radius:4px;background:rgba(255,255,255,.14);margin:6px 0 6px;overflow:hidden}
+  .fill{height:100%;border-radius:4px;background:#d97757;width:0}
+  .fill.warn{background:#e6b84f}.fill.hot{background:#e0686b}
+  .rs{font-size:12px;color:#cfc9bf}.rs b{color:#f4f2ee;font-weight:600}
+  .foot{font-size:11px;color:#a9a399;padding-top:6px;border-top:1px solid rgba(255,255,255,.1)}
+  .none{padding:10px 2px;color:#cfc9bf;line-height:1.5}
+  .links{display:flex;gap:8px;padding-top:10px}
+  .links a{flex:1;text-align:center;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,.1);color:#f4f2ee;text-decoration:none;font-size:12px;font-weight:600;cursor:pointer}
+  .links a:hover{background:rgba(217,119,87,.55)}
+</style></head>
+<body>
+<div id="wrap" class="min">
+  <div id="box">
+    <div id="bubble" title="Claude usage"><svg id="burst" width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#faf9f5" stroke-width="2.3" stroke-linecap="round"></svg></div>
+    <span class="cnt g" id="cg" title="Minutes until the 5-hour limit resets (hours of the weekly limit once it is used up)">–</span>
+    <span class="cnt y" id="cy" title="5-hour limit used, in percent">–</span>
+    <span class="cnt r" id="cr" title="Weekly limit used, in percent">–</span>
+  </div>
+  <div id="panel">
+    <div class="head"><span>Claude usage</span><span><button id="min" title="Minimize to the icon">–</button><button id="x" title="Close the meter">✕</button></span></div>
+    <div id="body"></div>
+    <div class="links"><a data-u="https://claude.ai/new#settings/usage">Usage settings</a><a data-u="https://claude.ai/new">New chat</a></div>
+  </div>
+</div>
+<script>
+  // the starburst glyph: 12 rays of alternating length
+  (function () { let d = ""; for (let k = 0; k < 12; k++) { const a = k * Math.PI / 6, r1 = 3.2, r2 = k % 2 ? 8.2 : 10.6; d += `M${(12 + r1 * Math.cos(a)).toFixed(2)} ${(12 + r1 * Math.sin(a)).toFixed(2)}L${(12 + r2 * Math.cos(a)).toFixed(2)} ${(12 + r2 * Math.sin(a)).toFixed(2)}`; } const p = document.createElementNS("http://www.w3.org/2000/svg", "path"); p.setAttribute("d", d); document.getElementById("burst").appendChild(p); })();
+  const wrap = document.getElementById("wrap"), panel = document.getElementById("panel"), body = document.getElementById("body");
+  let open = false, data = null;
+  const fit = () => requestAnimationFrame(() => window.api.resize(open ? 340 : 76, wrap.scrollHeight + 10));
+  const pad = (n) => String(n).padStart(2, "0");
+  function dur(s) {
+    if (s <= 0) return "now";
+    const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60), x = Math.floor(s % 60);
+    if (d) return `${d}d ${h}h`; if (h) return `${h}h ${pad(m)}m`; return `${m}m ${pad(x)}s`;
+  }
+  const clock = (t, weekday) => new Date(t * 1000).toLocaleString([], weekday ? { weekday: "short", hour: "numeric", minute: "2-digit" } : { hour: "numeric", minute: "2-digit" });
+  function block(title, w, weekday) {
+    const now = Date.now() / 1000;
+    if (!w || w.used_percentage == null) return `<div class="blk"><div class="top"><span class="name">${title}</span><span class="pct">–</span></div><div class="rs">no data yet</div></div>`;
+    const over = w.resets_at && now >= w.resets_at;          // the window rolled over since the last reading
+    const pct = over ? 0 : Math.max(0, Math.min(100, w.used_percentage));
+    const cls = pct >= 90 ? "hot" : pct >= 70 ? "warn" : "";
+    const reset = over ? `<b>reset</b>, shows 0% until the next reading` : `Resets in <b>${dur(w.resets_at - now)}</b> · ${clock(w.resets_at, weekday)}`;
+    return `<div class="blk"><div class="top"><span class="name">${title}</span><span class="pct">${Math.round(pct)}% used</span></div><div class="bar"><div class="fill ${cls}" style="width:${pct}%"></div></div><div class="rs">${reset}</div></div>`;
+  }
+  // the three numbers around the icon
+  function planets() {
+    const rl = data && data.rate_limits, now = Date.now() / 1000;
+    const fh = rl && rl.five_hour, wk = rl && rl.seven_day;
+    const live = (w) => w && w.used_percentage != null;
+    const fhOver = fh && fh.resets_at && now >= fh.resets_at, wkOver = wk && wk.resets_at && now >= wk.resets_at;
+    let g = "–";
+    if (wk && live(wk) && !wkOver && wk.used_percentage >= 100 && wk.resets_at > now) g = Math.ceil((wk.resets_at - now) / 3600) + "H";   // weekly limit used up: hours left
+    else if (fh && fh.resets_at && fh.resets_at > now) g = pad(Math.ceil((fh.resets_at - now) / 60));                                        // minutes to the 5-hour reset
+    const warn = needLogin();   // no login: a warning sign instead of the numbers
+    document.getElementById("cg").textContent = warn ? "⚠" : g;
+    document.getElementById("cy").textContent = warn ? "⚠" : live(fh) ? pad(fhOver ? 0 : Math.round(fh.used_percentage)) : "–";
+    document.getElementById("cr").textContent = warn ? "⚠" : live(wk) ? pad(wkOver ? 0 : Math.round(wk.used_percentage)) : "–";
+    document.querySelectorAll(".cnt").forEach((c) => c.classList.toggle("click", warn));
+  }
+  const needLogin = () => !!(data && data.needLogin);
+  function render() {
+    planets();
+    if (!open) return;
+    const rl = data && data.rate_limits;
+    if (needLogin()) {
+      const h = data.loggingIn
+        ? `<div class="none">Waiting for you to finish signing in, in your browser…</div>`
+        : `<div class="none">⚠ ${data.error}.<br>Click the icon (or the button) to sign in to Claude.</div><div class="links"><a id="login">Log in</a></div>`;
+      if (body.dataset.h !== h) {   // rewrite only on change, so a click on the button is never lost to a redraw
+        body.innerHTML = h; body.dataset.h = h;
+        const b = document.getElementById("login"); if (b) b.onclick = () => window.api.login();
+      }
+    } else if (!rl) {
+      const why = data && data.error ? `Could not read your usage yet: ${data.error}.` : "No usage data yet.";
+      body.innerHTML = `<div class="none">${why}<br>It retries every 30 seconds.</div>`;
+    } else {
+      const age = Math.max(0, Math.round(Date.now() / 1000 - data.t));
+      const ago = age < 90 ? age + "s ago" : age < 5400 ? Math.round(age / 60) + " min ago" : Math.round(age / 3600) + " h ago";
+      const note = data.error ? ` · last refresh failed: ${data.error}` : " · refreshes every minute";
+      body.innerHTML = block("5-hour limit", rl.five_hour, false) + block("Weekly limit", rl.seven_day, true) + `<div class="foot">Updated ${ago}${note}</div>`;
+    }
+    fit();
+  }
+  // drag the icon anywhere (a short click still opens/closes the panel)
+  (function () {
+    const b = document.getElementById("bubble"); let sx = 0, sy = 0, down = false, moved = false;
+    b.addEventListener("mousedown", (e) => { if (e.button !== 0) return; sx = e.screenX; sy = e.screenY; down = true; moved = false; window.api.dragStart(); });
+    window.addEventListener("mousemove", (e) => { if (!down) return; const dx = e.screenX - sx, dy = e.screenY - sy; if (!moved && Math.abs(dx) + Math.abs(dy) < 4) return; moved = true; window.api.dragMove(dx, dy); });
+    window.addEventListener("mouseup", () => { if (down) { down = false; window.api.dragEnd(); } });
+    b.addEventListener("click", (e) => { if (moved) { e.stopImmediatePropagation(); e.preventDefault(); moved = false; } }, true);
+  })();
+  function toggle(forceOpen) { open = forceOpen || !open; panel.classList.toggle("open", open); wrap.classList.toggle("min", !open); render(); fit(); }
+  // with no login, a click on the icon or any number starts the sign-in (and opens the panel to show it)
+  const needLoginClick = () => { if (!needLogin()) return false; if (!data.loggingIn) window.api.login(); toggle(true); return true; };
+  document.getElementById("bubble").onclick = () => { if (!needLoginClick()) toggle(); };
+  document.querySelectorAll(".cnt").forEach((c) => { c.onclick = needLoginClick; });
+  document.getElementById("min").onclick = () => { open = false; panel.classList.remove("open"); wrap.classList.add("min"); fit(); };
+  document.getElementById("x").onclick = () => window.api.quit();
+  document.querySelectorAll(".links a").forEach((a) => { a.onclick = () => window.api.openLink(a.dataset.u); });
+  window.api.onData((d) => { data = d; render(); });
+  window.api.data().then((d) => { data = d; render(); });
+  setInterval(render, 1000);   // live countdowns
+  fit();
+</script></body></html>

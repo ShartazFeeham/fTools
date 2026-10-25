@@ -1,0 +1,14 @@
+{
+  "name": "@shartazfeeham/claude-meter",
+  "version": "1.0.0",
+  "description": "Floating Claude icon: 5-hour and weekly usage-limit meter for your Claude Code account (macOS and Windows)",
+  "main": "main.js",
+  "bin": { "claude-meter": "bin/cli.js" },
+  "files": ["bin", "lib.js", "main.js", "preload.js", "meter.html"],
+  "scripts": { "test": "node test.js" },
+  "dependencies": { "electron": "^45.0.0" },
+  "engines": { "node": ">=18" },
+  "license": "MIT",
+  "author": "ShartazFeeham",
+  "repository": { "type": "git", "url": "git+https://github.com/ShartazFeeham/claude-meter.git" }
+}
